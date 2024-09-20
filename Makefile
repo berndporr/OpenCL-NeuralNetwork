@@ -1,2 +1,3 @@
 all:
-	g++ -Wall -Wextra -D CL_TARGET_OPENCL_VERSION=100 NeuralNetwork.cpp main.cpp -o nn
+	g++ -Wall -Wextra -D CL_TARGET_OPENCL_VERSION=110 NeuralNetwork.cpp main.cpp -o nn -lOpenCL
+

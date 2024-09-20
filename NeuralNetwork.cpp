@@ -498,7 +498,7 @@ NeuralNetwork CreateNeuralNetwork(int numberOfLayers, int numberOfPerceptrons[],
         layer_region.size = sizeof(Perceptron)*n.perceptronLayers[i].numOfPerceptrons;
         weight_region.size = sizeof(cl_float)*n.perceptronLayers[i].perceptrons[0].numOfInputs*n.perceptronLayers[i].numOfPerceptrons;
         delta_region.size = sizeof(cl_float)*n.perceptronLayers[i].perceptrons[0].numOfInputs*n.perceptronLayers[i].numOfPerceptrons;
-        
+
         // Bug in OpenCL requires me to pass an err cl_int* to clCreateSubBuffer() if i pass NULL it crashes
         n.layer_buffer[i-1] = clCreateSubBuffer(n.network_layer_buffer, CL_MEM_READ_WRITE, CL_BUFFER_CREATE_TYPE_REGION, &layer_region, &err);
 	n.weight_buffer[i-1] = clCreateSubBuffer(n.network_weight_buffer, CL_MEM_READ_WRITE, CL_BUFFER_CREATE_TYPE_REGION, &weight_region, &err);
@@ -681,7 +681,7 @@ void UpdateNeuralNetwork(NeuralNetwork* n) {
             size_t global_work_size = n->perceptronLayers[n->numOfPerceptronLayers-1].numOfPerceptrons;
             err = clEnqueueNDRangeKernel(n->queue, n->kernels[ONLINE_TRAIN_LOGISTIC_OUTPUT_KERNEL+n->activation_function], 1, NULL, &global_work_size, NULL, 0, NULL, NULL);
             if(err != CL_SUCCESS) {
-                printf("Neural Network Error - online train kernel output layer returned %s failed execution terminating function\n", cl_get_error_string(err));
+                printf("Neural Network Error - online train kernel output layer returned %s failed execution terminating function\n", cl_get_error_string(err).c_str());
                 return;
             }
             
@@ -749,7 +749,7 @@ void UpdateNeuralNetwork(NeuralNetwork* n) {
                 global_work_size = n->perceptronLayers[i].numOfPerceptrons;
                 err = clEnqueueNDRangeKernel(n->queue, n->kernels[ONLINE_TRAIN_LOGISTIC_HIDDEN_KERNEL+n->activation_function], 1, NULL, &global_work_size, NULL, 0, NULL, NULL);
                 if(err != CL_SUCCESS) {
-                    printf("Neural Network Error - online train kernel hidden layer returned %s failed execution terminating function\n", cl_get_error_string(err));
+                    printf("Neural Network Error - online train kernel hidden layer returned %s failed execution terminating function\n", cl_get_error_string(err).c_str());
                     return;
                 }
             }
@@ -778,7 +778,7 @@ void UpdateNeuralNetwork(NeuralNetwork* n) {
             size_t global_work_size = n->perceptronLayers[n->numOfPerceptronLayers-1].numOfPerceptrons;
             err = clEnqueueNDRangeKernel(n->queue, n->kernels[COMPUTE_LOGISTIC_OUTPUT_ERROR_KERNEL+n->activation_function], 1, NULL, &global_work_size, NULL, 0, NULL, NULL);
             if(err != CL_SUCCESS) {
-                printf("Neural Network Error - output error kernel returned %s failed execution terminating function\n", cl_get_error_string(err));
+                printf("Neural Network Error - output error kernel returned %s failed execution terminating function\n", cl_get_error_string(err).c_str());
                 return;
             }
             
@@ -808,7 +808,8 @@ void UpdateNeuralNetwork(NeuralNetwork* n) {
                 size_t global_work_size = n->perceptronLayers[i].numOfPerceptrons;
                 err = clEnqueueNDRangeKernel(n->queue, n->kernels[COMPUTE_LOGISTIC_HIDDEN_ERROR_KERNEL+n->activation_function], 1, NULL, &global_work_size, NULL, 0, NULL, NULL);
                 if(err != CL_SUCCESS) {
-                    printf("Neural Network Error - hidden layer error kernel returned %s failed execution terminating function\n", cl_get_error_string(err));
+                    printf("Neural Network Error - hidden layer error kernel returned %s failed execution terminating function\n",
+			   cl_get_error_string(err).c_str());
                     return;
                 }
             }
@@ -869,7 +870,8 @@ void UpdateNeuralNetwork(NeuralNetwork* n) {
             
             err = clEnqueueNDRangeKernel(n->queue, n->kernels[BATCH_TRAIN_NETWORK_KERNEL], 1, NULL, &global_work_size, NULL, 0, NULL, NULL);
             if(err != CL_SUCCESS) {
-                printf("Neural Network Error - batch train network kernel returned %s failed execution terminating function\n", cl_get_error_string(err));
+                printf("Neural Network Error - batch train network kernel returned %s failed execution terminating function\n",
+		       cl_get_error_string(err).c_str());
                 return;
             }
         }
@@ -878,7 +880,8 @@ void UpdateNeuralNetwork(NeuralNetwork* n) {
             cl_float* sq_errors = (cl_float*)malloc(sizeof(cl_float) * n->perceptronLayers[n->numOfPerceptronLayers-1].numOfPerceptrons);
             err = clEnqueueReadBuffer(n->queue, n->error_buffer, CL_TRUE, 0, sizeof(cl_float)*n->perceptronLayers[n->numOfPerceptronLayers-1].numOfPerceptrons, (void*)sq_errors, 0, NULL, NULL);		
             if(err != CL_SUCCESS) {
-                printf("Neural Network Error - error buffer read failed %s terminating function\n", cl_get_error_string(err));
+                printf("Neural Network Error - error buffer read failed %s terminating function\n",
+		       cl_get_error_string(err).c_str());
                 return;
             }
             
@@ -894,7 +897,8 @@ void UpdateNeuralNetwork(NeuralNetwork* n) {
         if(n->online) {
             err = clEnqueueReadBuffer(n->queue, n->output_buffer, CL_TRUE, 0, sizeof(cl_float)*n->perceptronLayers[n->numOfPerceptronLayers-1].numOfPerceptrons, (void*)n->outputs, 0, NULL, NULL);		
             if(err != CL_SUCCESS) {
-                printf("Neural Network Error - output buffer read failed %s terminating function\n", cl_get_error_string(err));
+                printf("Neural Network Error - output buffer read failed %s terminating function\n",
+		       cl_get_error_string(err).c_str());
                 return;
             }
         }
@@ -949,13 +953,15 @@ void UpdateNeuralNetwork(NeuralNetwork* n) {
         
         err = clEnqueueNDRangeKernel(n->queue, n->kernels[HEBBIAN_TRAIN_KERNEL], 1, NULL, &global_work_size, NULL, 0, NULL, NULL);
         if(err != CL_SUCCESS) {
-            printf("Neural Network Error - hebbian train network kernel returned %s failed execution terminating function\n", cl_get_error_string(err));
+            printf("Neural Network Error - hebbian train network kernel returned %s failed execution terminating function\n",
+		   cl_get_error_string(err).c_str());
             return;
         }
         
         err = clEnqueueReadBuffer(n->queue, n->output_buffer, CL_TRUE, 0, sizeof(cl_float)*n->perceptronLayers[n->numOfPerceptronLayers-1].numOfPerceptrons, (void*)n->outputs, 0, NULL, NULL);		
 	if(err != CL_SUCCESS) {
-	    printf("Neural Network Error - output buffer read failed %s terminating function\n", cl_get_error_string(err));
+	    printf("Neural Network Error - output buffer read failed %s terminating function\n",
+		   cl_get_error_string(err).c_str());
 	    return;
 	}
         
@@ -967,7 +973,8 @@ void UpdateNeuralNetwork(NeuralNetwork* n) {
 	// until training is over
 	err = clEnqueueReadBuffer(n->queue, n->output_buffer, CL_TRUE, 0, sizeof(cl_float)*n->perceptronLayers[n->numOfPerceptronLayers-1].numOfPerceptrons, (void*)n->outputs, 0, NULL, NULL);		
 	if(err != CL_SUCCESS) {
-	    printf("Neural Network Error - output buffer read failed %s terminating function\n", cl_get_error_string(err));
+	    printf("Neural Network Error - output buffer read failed %s terminating function\n",
+		   cl_get_error_string(err).c_str());
 	    return;
 	}
     }
@@ -997,8 +1004,8 @@ int TrainNeuralNetwork(NeuralNetwork* n, float** sets, float** targets, int samp
     cl_ulong global_mem;
     clGetDeviceInfo(n->device, CL_DEVICE_MAX_MEM_ALLOC_SIZE, sizeof(cl_ulong), &global_mem, NULL);
     
-    char* byte_size_mem;
-    char* byte_size_req;
+    std::string byte_size_mem;
+    std::string byte_size_req;
     int mem_div;
     int req_div;
     
@@ -1024,7 +1031,7 @@ int TrainNeuralNetwork(NeuralNetwork* n, float** sets, float** targets, int samp
         req_div = 1024;
     }
     
-    printf("Neural Network Info - Required Memory:%.2f%s Availble Memory:%.2f%s\n\n", (float)(target_buffer_mem + input_buffer_mem + network_mem) / req_div, byte_size_req, (float)global_mem / mem_div, byte_size_mem);
+    printf("Neural Network Info - Required Memory:%.2f%s Availble Memory:%.2f%s\n\n", (float)(target_buffer_mem + input_buffer_mem + network_mem) / req_div, byte_size_req.c_str(), (float)global_mem / mem_div, byte_size_mem.c_str());
     
     if(target_buffer_mem + input_buffer_mem + network_mem > global_mem) { 
         printf("Neural Network Error - Device does not have enough memory for training samples terminating function\n");
@@ -1114,7 +1121,7 @@ int TrainNeuralNetwork(NeuralNetwork* n, float** sets, float** targets, int samp
                     cl_float* sq_errors = (cl_float*)malloc(sizeof(cl_float) * n->perceptronLayers[n->numOfPerceptronLayers-1].numOfPerceptrons);
                     err = clEnqueueReadBuffer(n->queue, n->error_buffer, CL_TRUE, 0, sizeof(cl_float)*n->perceptronLayers[n->numOfPerceptronLayers-1].numOfPerceptrons, (void*)sq_errors, 0, NULL, NULL);		
                     if(err != CL_SUCCESS) {
-                        printf("Neural Network Error - error buffer read failed %s terminating function\n", cl_get_error_string(err));
+                        printf("Neural Network Error - error buffer read failed %s terminating function\n", cl_get_error_string(err).c_str());
                         return -1;
                     }
                     n->error = 0;
@@ -1183,9 +1190,9 @@ int TrainNeuralNetwork(NeuralNetwork* n, float** sets, float** targets, int samp
         clReleaseMemObject(input_buffers[i]);
     }
     
-    // Formating
+    // Formatting
     int t_div = 1;
-    char* t_string = "Seconds";
+    std::string t_string = "Seconds";
     
     if(n->trainingTime > 60) {
         t_string = "Minutes";
@@ -1197,7 +1204,7 @@ int TrainNeuralNetwork(NeuralNetwork* n, float** sets, float** targets, int samp
     }
     
     // Print training results
-    printf("Neural Network Info - Training Completed:\nMSE:%f\nTime:%.2f %s\nIterations:%i\n\n", n->error, (float)(((int)(n->trainingTime)) / (float)t_div), t_string, it);
+    printf("Neural Network Info - Training Completed:\nMSE:%f\nTime:%.2f %s\nIterations:%i\n\n", n->error, (float)(((int)(n->trainingTime)) / (float)t_div), t_string.c_str(), it);
     
     return it;
 }

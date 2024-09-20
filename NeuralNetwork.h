@@ -13,11 +13,6 @@
 //TODO: resilent propagation 
 //TODO: try moving clSetKernelArgs (the cl_mem ones that don't change) to CreateNeuralNetwork()
 
-struct cl_buffer_region {
-    int origin = 0;
-    int size = 0;
-};
-
 typedef enum {
     kNetworkTypeStandard = 0,
     kNetworkTypeElman,

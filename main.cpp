@@ -15,85 +15,41 @@
 
 /* 
    XOR Truth Table
- -------------------
-     In In Out
-      1  1  0
-      0  1  1
-      1  0  1
-      0  0  0
+   -------------------
+   In In Out
+   1  1  0
+   0  1  1
+   1  0  1
+   0  0  0
 */
 
 /*
-   Neural Network Model Diagram
- --------------------------------
-		  Out
-           |
-           O  <- Output layer
-          / \
-		 O   O <- Hidden layer
-		/\   /\
-        \/   \/
-		O     O <- Input layer
-		|     |
-	    In    In
+  Neural Network Model Diagram
+  --------------------------------
+  Out
+  |
+  O  <- Output layer
+  / \
+  O   O <- Hidden layer
+  /\   /\
+  \/   \/
+  O     O <- Input layer
+  |     |
+  In    In
 */
 
 #define pattern_size 7
 
-bool gpu = false;
+bool gpu = true;
 
-void reccurent() {
-    int numOfPerceptrons[3] =  {1,1,1};
-    
-    int pattern[pattern_size] = {0,1,1,0,1,1,0};
-    
-    float** sequence = new float*[(pattern_size-1)];
-    float** targets = new float*[(pattern_size-1)];
-    for(int i=0;i<pattern_size-1;i++) {
-        sequence[i] = new float;
-        targets[i] = new float;
-        
-        sequence[i][0] = pattern[i];
-        targets[i][0] = pattern[i+1];
-    }
-    
-    NeuralNetwork brain = CreateNeuralNetwork(3, numOfPerceptrons, 0.15, 0.1, kNetworkTypeElman, kNetworkFunctionLogistic, kNetworkLearningModeBackpropagation, gpu);
-    TrainNeuralNetwork(&brain, sequence, targets, pattern_size-1, 1000000, 0.005, false);
-    
-    bool flag = true;
-    for(int i=0;i<pattern_size-1;i++) {
-        brain.inputs[0] = sequence[i][0];
-        UpdateNeuralNetwork(&brain);
-        
-        printf("Input:%i Actual Output:%f Target:%i Output:%i\n", pattern[i], brain.outputs[0], pattern[i+1], (brain.outputs[0] > 0.5));
-        
-        if((brain.outputs[0] > 0.5) != pattern[i+1]) {
-            flag = false;
-        }
-    }
-    
-    if(flag) {
-        printf("\nMATCH\n");
-    } else {
-        printf("\nINCORRECT\n");
-    }
-    
-    printf("\nMSE:%f Training Time:%f Execution Time:%f\n\n", brain.error, brain.trainingTime, brain.executionTime);
-    
-    ReleaseNeuralNetwork(&brain);
-}
-
-int main (int argc, const char * argv[]) {
-    /*reccurent();
+int main (int, const char **) {
     gpu = true;
-    reccurent();
-    exit(0);*/
         
     int nodes[3] = {2,2,1};
 
-	// Create the network
-	NeuralNetwork brain = CreateNeuralNetwork(3, nodes, 0.5, 0.8, kNetworkTypeStandard, kNetworkFunctionLogistic, kNetworkLearningModeBackpropagation, gpu); // The learning rate is trial and error same with momentum high values can be used
-                                                                                                                                                                              // with this simple net because it does not have to generalize at all                
+    // Create the network
+    NeuralNetwork brain = CreateNeuralNetwork(3, nodes, 0.5, 0.8, kNetworkTypeStandard, kNetworkFunctionLogistic, kNetworkLearningModeBackpropagation, gpu); // The learning rate is trial and error same with momentum high values can be used
+    // with this simple net because it does not have to generalize at all                
                                                                                                                                                         
     float** samples = new float*[4];
     float** targets = new float*[4];
@@ -124,30 +80,30 @@ int main (int argc, const char * argv[]) {
     
     TrainNeuralNetwork(&brain, samples, targets, 4, 10000, /*0.0005*/-1, false);
     
-	// Output the results to determine if the network was adequately trained
-	// the outputs will never actually converge to 0 or 1 completely
-	brain.inputs[0] = -1.0;
-	brain.inputs[1] = -1.0;
-	UpdateNeuralNetwork(&brain);
-	printf("Output:%f\n", brain.outputs[0]);
+    // Output the results to determine if the network was adequately trained
+    // the outputs will never actually converge to 0 or 1 completely
+    brain.inputs[0] = -1.0;
+    brain.inputs[1] = -1.0;
+    UpdateNeuralNetwork(&brain);
+    printf("Output:%f\n", brain.outputs[0]);
 	
-	brain.inputs[0] = 1;
-	brain.inputs[1] = -1.0;
-	UpdateNeuralNetwork(&brain);
-	printf("Output:%f\n", brain.outputs[0]);
+    brain.inputs[0] = 1;
+    brain.inputs[1] = -1.0;
+    UpdateNeuralNetwork(&brain);
+    printf("Output:%f\n", brain.outputs[0]);
 	
-	brain.inputs[0] = -1.0;
-	brain.inputs[1] = 1;
-	UpdateNeuralNetwork(&brain);
-	printf("Output:%f\n", brain.outputs[0]);
+    brain.inputs[0] = -1.0;
+    brain.inputs[1] = 1;
+    UpdateNeuralNetwork(&brain);
+    printf("Output:%f\n", brain.outputs[0]);
 	
-	brain.inputs[0] = 1;
-	brain.inputs[1] = 1;
-	UpdateNeuralNetwork(&brain);
-	printf("Output:%f\n\n", brain.outputs[0]);
+    brain.inputs[0] = 1;
+    brain.inputs[1] = 1;
+    UpdateNeuralNetwork(&brain);
+    printf("Output:%f\n\n", brain.outputs[0]);
     	
-	// When finished free the allocated memory that the network used
-	ReleaseNeuralNetwork(&brain);
+    // When finished free the allocated memory that the network used
+    ReleaseNeuralNetwork(&brain);
     
     if(gpu != true) {
         gpu = true;
