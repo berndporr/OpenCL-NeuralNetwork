@@ -8,13 +8,15 @@
 #ifndef NN_H
 #define NN_H 
 
-#include <OpenCL/OpenCL.h>
-#include <stdbool.h>
+#include <CL/cl.h>
 
 //TODO: resilent propagation 
 //TODO: try moving clSetKernelArgs (the cl_mem ones that don't change) to CreateNeuralNetwork()
 
-#pragma mark Common
+struct cl_buffer_region {
+    int origin = 0;
+    int size = 0;
+};
 
 typedef enum {
     kNetworkTypeStandard = 0,
@@ -34,77 +36,71 @@ typedef enum {
 
 #define KERNEL_COUNT 12
 
-#pragma mark Perceptron
-
 // Strucutre to organize data
 typedef struct __attribute__ ((aligned (16))) { // 16 byte aligment
-	float output; 
-	float bias; 
-	float error; 
+    float output; 
+    float bias; 
+    float error; 
 	
-	int numOfInputs;
+    int numOfInputs;
     int reccurent;
 } Perceptron;
 
-#pragma mark PerceptronLayer
-
 // Structure holding an array of perceptrons and a int to keep track of the count
 typedef struct {
-	Perceptron* perceptrons;	
-	int numOfPerceptrons;
+    Perceptron* perceptrons;	
+    int numOfPerceptrons;
 } PerceptronLayer;
-
-#pragma mark NeuralNetwork
 
 // Structure to hold and organize perceptron layers, inputs, outputs and desiredOutputs
 typedef struct {	
-	PerceptronLayer* perceptronLayers;
-	int numOfPerceptronLayers;
+    PerceptronLayer* perceptronLayers;
+    int numOfPerceptronLayers;
     
     int training_flags;
 	    
-	NetworkType type; 
+    NetworkType type; 
     NetworkFunction activation_function;
     NetworkLearningMode learning_mode;
 	
-	cl_float* desiredOutputs;
-	cl_float* inputs;
+    cl_float* desiredOutputs;
+    cl_float* inputs;
     cl_float* outputs;
 	
-	cl_float** weights;
-	cl_float** previous_deltas;
+    cl_float** weights;
+    cl_float** previous_deltas;
 		
-	cl_float learningRate;
-	cl_float error;
-	cl_float momentum;
+    cl_float learningRate;
+    cl_float error;
+    cl_float momentum;
 	
-	cl_float trainingTime;
-	cl_float executionTime;
+    cl_float trainingTime;
+    cl_float executionTime;
 
-	cl_context context;
-	cl_command_queue queue;
-	cl_device_id device;
+    cl_context context;
+    cl_command_queue queue;
+    cl_device_id device;
 	
     cl_mem network_weight_buffer;
     cl_mem network_delta_buffer;
     cl_mem network_layer_buffer;
     
-	cl_mem* weight_buffer;
-	cl_mem* delta_buffer;
-	cl_mem* layer_buffer;
+    cl_mem* weight_buffer;
+    cl_mem* delta_buffer;
+    cl_mem* layer_buffer;
     cl_mem error_buffer;
-	cl_mem input_buffer;
-	cl_mem output_buffer;
-	cl_mem target_buffer;
-	cl_mem null_buffer;
+    cl_mem input_buffer;
+    cl_mem output_buffer;
+    cl_mem target_buffer;
+    cl_mem null_buffer;
     
     cl_mem node_count_buffer;
     cl_mem connection_count_buffer;
 	
-	cl_program program;
-	cl_kernel kernels[KERNEL_COUNT];
+    cl_program program;
+    cl_kernel kernels[KERNEL_COUNT];
 	
-	bool train;
+    bool train;
     bool online;
 } NeuralNetwork;
 
@@ -122,12 +118,6 @@ void UpdateNeuralNetwork(NeuralNetwork* n);
 // to run for the specified iterations only, the function returns the number of iterations it did or -1 if execution failed
 int TrainNeuralNetwork(NeuralNetwork* n, float** sets, float** targets, int samples, int iterations, float mse, bool randomize);
 
-
-// Save a neural network to be opened later with loadNet
-void saveNet(NeuralNetwork* n, const char* filename);
-
-// Create a neural network from a file created by saveNet
-NeuralNetwork loadNet(const char* filename, bool useGPU);
 
 // Free neural network when done
 void ReleaseNeuralNetwork(NeuralNetwork* n);

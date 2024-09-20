@@ -47,11 +47,11 @@ void reccurent() {
     
     int pattern[pattern_size] = {0,1,1,0,1,1,0};
     
-    float** sequence = malloc(sizeof(float)*(pattern_size-1));
-    float** targets = malloc(sizeof(float)*(pattern_size-1));
+    float** sequence = new float*[(pattern_size-1)];
+    float** targets = new float*[(pattern_size-1)];
     for(int i=0;i<pattern_size-1;i++) {
-        sequence[i] = malloc(sizeof(float));
-        targets[i] = malloc(sizeof(float));
+        sequence[i] = new float;
+        targets[i] = new float;
         
         sequence[i][0] = pattern[i];
         targets[i][0] = pattern[i+1];
@@ -95,11 +95,11 @@ int main (int argc, const char * argv[]) {
 	NeuralNetwork brain = CreateNeuralNetwork(3, nodes, 0.5, 0.8, kNetworkTypeStandard, kNetworkFunctionLogistic, kNetworkLearningModeBackpropagation, gpu); // The learning rate is trial and error same with momentum high values can be used
                                                                                                                                                                               // with this simple net because it does not have to generalize at all                
                                                                                                                                                         
-    float** samples = malloc(sizeof(float*) * 4);
-    float** targets = malloc(sizeof(float*) * 4);
+    float** samples = new float*[4];
+    float** targets = new float*[4];
     for(int i=0;i<4;i++) {
-        samples[i] = malloc(sizeof(float) * 2);
-        targets[i] = malloc(sizeof(float));
+        samples[i] = new float[2];
+        targets[i] = new float;
     }
 
     samples[0][0] = -1.0;
